@@ -28,11 +28,36 @@ char	*get_next_line(int fd)
 	buffer = NULL;
   if(rest_node)
   {
-    printf("in\n");    // check = ft_check_end_line(rest_node.content, BUFFER_SIZE);
-    // if(check)
-    // {
-    //   first_node->content = ft_split_line(rest_node->content, rest_node, check);
-    // }
+    check = ft_check_end_line(rest_node, BUFFER_SIZE);
+    if (check > 0)
+    {
+      first_node->content = ft_split_line(rest_node->content, &rest_node, BUFFER_SIZE);
+    }
+    else if (check == 0)
+    {
+
+        buffer = calloc(BUFFER_SIZE+1, sizeof(char));
+        b_read = ft_read(fd, buffer, BUFFER_SIZE);
+        lst_line = ft_lstnew(buffer);
+        first_node->next = lst_line;
+        lst_line = lst_line->next;
+        check = ft_check_end_line(lst_line, BUFFER_SIZE);
+
+      while (check == 0)
+      {
+        buffer = calloc(BUFFER_SIZE+1, sizeof(char));
+        b_read = ft_read(fd, buffer, BUFFER_SIZE);
+        lst_line-> next = ft_lstnew(buffer);
+        lst_line = lst_line->next;
+        check = ft_check_end_line(lst_line, BUFFER_SIZE);
+      }
+      if(check > 0)
+	    {
+		   lst_line->content = ft_split_line(lst_line->content, &rest_node, check);
+	    }
+
+    }
+      return (first_node->content);
   }
   else{
   buffer = calloc(BUFFER_SIZE + 1, sizeof(char));
@@ -40,7 +65,6 @@ char	*get_next_line(int fd)
       return (NULL);
 	b_read = ft_read(fd, buffer, BUFFER_SIZE);
 	lst_line = ft_lstnew(buffer);
-    free(buffer);
 	first_node = lst_line;
   }
 	check = ft_check_end_line(first_node, BUFFER_SIZE);
@@ -53,12 +77,7 @@ char	*get_next_line(int fd)
 		lst_line = lst_line->next;
 		check = ft_check_end_line(lst_line, BUFFER_SIZE);
 	}
-	if (check == BUFFER_SIZE)
-	{
-		/*     head->have_content = 0; */
-		return (first_node->content);
-	}
-	else if (check > 0)
+	if(check > 0)
 	{
 		lst_line->content = ft_split_line(lst_line->content, &rest_node, check);
 	}
