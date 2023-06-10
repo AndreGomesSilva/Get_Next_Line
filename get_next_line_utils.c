@@ -6,38 +6,24 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 10:47:58 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/08 15:15:00 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/09 20:34:08 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+#include <threads.h>
 
 t_list	*ft_lstnew(void *content)
 {
 	t_list	*node;
 
-	node = malloc(sizeof(t_list));
+	node = calloc(sizeof(t_list), sizeof(t_list));
 	if (node == NULL)
 		return (NULL);
 	node->content = content;
-	node->count = 0;
 	node->next = NULL;
 	return (node);
 }
-
-// void	ft_lstadd_back(t_list **lst, t_list *new)
-// {
-// 	t_list	*last;
-//
-// 	if (!new)
-// 		return ;
-// 	if (!last)
-// 		*lst = new;
-// 	else
-// 	{
-// 		last->next = new;
-// 	}
-// }
 
 void	*ft_calloc(size_t nmemb, size_t size)
 {
