@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line_utils.c                              :+:      :+:    :+:   */
+/*   get_next_line_utils_teste.c                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 10:47:58 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/10 22:01:52 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/11 18:07:40 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,13 +49,17 @@ void	*ft_calloc(size_t nmemb, size_t size)
 int	ft_lstsize(t_list *lst)
 {
 	int	count;
+  int iterator;
 
+  iterator = 0;
 	count = 0;
 	while (lst)
 	{
-		while (lst->content[count] != '\0')
+    iterator = 0;
+		while (lst->content[iterator])
 		{
 			count++;
+      iterator++;
 		}
     lst = lst -> next;
 	}
