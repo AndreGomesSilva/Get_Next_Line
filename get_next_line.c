@@ -6,7 +6,7 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/03 10:42:50 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/12 19:59:59 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/14 22:26:55 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,10 @@
 #include <stdlib.h>
 
 int		ft_read(int fd, void *buffer, size_t BUFFER);
-int		ft_check_end_line(t_list *lst, size_t len);
+int		ft_check_end_line(t_list *lst, int b_read, t_list *first_node);
 char	*ft_split_line(char *content, t_list **rest_node, size_t len);
 char	*return_str(t_list *lst);
+int	ft_strlen(char *content);
 
 char	*get_next_line(int fd)
 {
@@ -27,10 +28,11 @@ char	*get_next_line(int fd)
 	int				check;
 	int				b_read;
 
+	b_read = 1;
 	buffer = NULL;
 	if (rest_node)
 	{
-		check = ft_check_end_line(rest_node, BUFFER_SIZE);
+		check = ft_check_end_line(rest_node, 0, rest_node);
 		if (check > 0)
 		{
 			first_node = ft_lstnew(ft_split_line(rest_node->content, &rest_node,
@@ -50,7 +52,7 @@ char	*get_next_line(int fd)
 			lst_line = ft_lstnew(buffer);
 			first_node = ft_lstnew(rest_node->content);
 			first_node->next = lst_line;
-			check = ft_check_end_line(lst_line, BUFFER_SIZE);
+			check = ft_check_end_line(lst_line, b_read, first_node);
 			while (check == 0)
 			{
 				buffer = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
@@ -58,12 +60,13 @@ char	*get_next_line(int fd)
 				if (b_read == 0 || b_read == -1)
 				{
 					free(buffer);
+					ft_lstclear(&first_node);
 					return (NULL);
 				}
 				lst_line->next = ft_lstnew(buffer);
 				if (lst_line->next != NULL)
 					lst_line = lst_line->next;
-				check = ft_check_end_line(lst_line, BUFFER_SIZE);
+				check = ft_check_end_line(lst_line, b_read, first_node);
 			}
 			if (check > 0)
 			{
@@ -89,31 +92,32 @@ char	*get_next_line(int fd)
 		}
 		lst_line = ft_lstnew(buffer);
 		first_node = lst_line;
-		check = ft_check_end_line(first_node, BUFFER_SIZE);
+		check = ft_check_end_line(first_node, b_read, first_node);
 		while (check == 0)
 		{
 			buffer = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-      if(!buffer)
-        return(NULL);
+			if (!buffer)
+				return (NULL);
 			b_read = ft_read(fd, buffer, BUFFER_SIZE);
-			if (b_read == 0 || b_read == -1)
+			if (b_read == -1)
 			{
 				free(buffer);
+				ft_lstclear(&first_node);
 				return (NULL);
 			}
 			lst_line->next = ft_lstnew(buffer);
 			if (lst_line->next != NULL)
 				lst_line = lst_line->next;
-			check = ft_check_end_line(lst_line, BUFFER_SIZE);
+			check = ft_check_end_line(lst_line, b_read, first_node);
 		}
-		if (check > 0)
+		if (check > 0 && ft_strlen(lst_line->content) != check)
 		{
 			lst_line->content = ft_split_line(lst_line->content, &rest_node,
 					check);
 		}
 		buffer = return_str(first_node);
 		ft_lstclear(&first_node);
-    		return (buffer);
+		return (buffer);
 	}
 	ft_lstclear(&rest_node);
 	return (NULL);
@@ -154,16 +158,14 @@ char	*ft_split_line(char *content, t_list **rest_node, size_t len)
 	int		iterator;
 	char	*rest_result;
 
-
-	free(*rest_node);
 	start_content = content;
 	rest_of_content = &start_content[len];
 	iterator = 0;
 	while (rest_of_content[iterator])
 		iterator++;
 	rest_result = (char *)ft_calloc(iterator + 1, sizeof(char));
-  if (!rest_result)
-    return (NULL);
+	if (!rest_result)
+		return (NULL);
 	while (iterator--)
 	{
 		rest_result[iterator] = rest_of_content[iterator];
@@ -180,20 +182,33 @@ char	*ft_split_line(char *content, t_list **rest_node, size_t len)
 	return (clear_content);
 }
 
-int	ft_check_end_line(t_list *lst, size_t len)
+int	ft_check_end_line(t_list *lst, int b_read, t_list *first_node)
 {
-	int	check;
 	int	iterator;
 
-	check = 0;
 	iterator = 0;
-	while (len--)
+	while (lst->content[iterator])
 	{
-		if (lst->content[iterator] == '\n' || lst-> content[iterator + 1] == '\0')
-			return (check + iterator + 1);
+		if (lst->content[iterator] == '\n')
+			return (iterator + 1);
 		iterator++;
 	}
-	return (check);
+	if (!b_read)
+		return (ft_lstsize(first_node));
+	return (0);
+}
+
+int	ft_strlen(char *content)
+{
+	int	count;
+
+	count = 0;
+	while (*content)
+  {
+    content++;
+    count++;
+  }
+	return (count);
 }
 
 int	ft_read(int fd, void *buffer, size_t BUFFER)
@@ -211,16 +226,24 @@ int	ft_read(int fd, void *buffer, size_t BUFFER)
 // 	int		fd;
 // 	char	*text;
 //
-// 	fd = open("test.txt", O_RDONLY);
+// 	fd = open("42_with_nl", O_RDONLY);
 // 	if (fd == -1)
 // 	{
 // 		printf("failed to open the file");
 // 		return (1);
 // 	}
 // 	text = get_next_line(fd);
-// 	printf("%s\n", text);
+// 	// while (text)
+// 	// {
+// 	// 	free(text);
+// 	// 	text = get_next_line(fd);
+// 	// }
+// 	printf("%s", text);
 // 	free(text);
-// 	text = get_next_line(fd);
-// 	printf("%s\n", text);
-// 	free(text);
+// 	// text = get_next_line(fd);
+// 	// printf("%s", text);
+// 	// free(text);
+// 	// text = get_next_line(fd);
+// 	// printf("%s", text);
+// 	// free(text);
 // }
