@@ -6,12 +6,11 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 10:47:58 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/12 17:47:30 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/15 21:54:29 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <threads.h>
 
 t_list	*ft_lstnew(void *content)
 {
@@ -53,10 +52,10 @@ int	ft_lstsize(t_list *lst)
 
   iterator = 0;
 	count = 0;
-	while (lst)
+	while (lst && lst->content)
 	{
     iterator = 0;
-		while (lst->content[iterator])
+		while (lst->content[iterator] && lst->content)
 		{
 			count++;
       iterator++;
