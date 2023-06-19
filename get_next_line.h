@@ -2,7 +2,7 @@
 # define GET_NEXT_LINE_H
 
 # ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 11
+#  define BUFFER_SIZE 42
 # endif
 # include <fcntl.h>
 # include <stdio.h>
@@ -21,5 +21,6 @@ void				*ft_calloc(size_t nmemb, size_t size);
 t_list				*ft_lstlast(t_list *lst);
 int					ft_lstsize(t_list *lst);
 void				ft_lstclear(t_list **lst);
+int					ft_strlen(char *content);
 
 #endif

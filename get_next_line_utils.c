@@ -6,7 +6,7 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 10:47:58 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/15 21:54:29 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/19 15:20:37 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ t_list	*ft_lstnew(void *content)
 {
 	t_list	*node;
 
-	node = ft_calloc(sizeof(t_list), sizeof(t_list));
+	node = (t_list *)ft_calloc(1, sizeof(t_list));
 	if (node == NULL)
 		return (NULL);
 	node->content = content;
@@ -48,19 +48,19 @@ void	*ft_calloc(size_t nmemb, size_t size)
 int	ft_lstsize(t_list *lst)
 {
 	int	count;
-  int iterator;
+	int	iterator;
 
-  iterator = 0;
+	iterator = 0;
 	count = 0;
 	while (lst && lst->content)
 	{
-    iterator = 0;
+		iterator = 0;
 		while (lst->content[iterator] && lst->content)
 		{
 			count++;
-      iterator++;
+			iterator++;
 		}
-    lst = lst -> next;
+		lst = lst->next;
 	}
 	return (count);
 }
@@ -75,10 +75,23 @@ void	ft_lstclear(t_list **lst)
 	temp_node = *lst;
 	while (temp_node != NULL)
 	{
-		next = temp_node -> next;
-    free (temp_node ->content);
-		free (temp_node);
+		next = temp_node->next;
+		free(temp_node->content);
+		free(temp_node);
 		temp_node = next;
 	}
 	*lst = NULL;
+}
+
+int	ft_strlen(char *content)
+{
+	int	count;
+
+	count = 0;
+	while (*content)
+	{
+		content++;
+		count++;
+	}
+	return (count);
 }
