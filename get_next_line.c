@@ -6,15 +6,15 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/03 10:42:50 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/20 16:58:21 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/20 17:20:19 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static char	*ft_split_line(char *content, t_list **rest_node, size_t len);
+static char	*catch_line(char *content, t_list **rest_node, size_t len);
 static char	*look_for_line(t_list **rest_node, int fd);
-static char	*return_str(t_list *lst);
+static char	*join_content(t_list *lst);
 static int	make_first_node(t_list **first_node, int fd, t_list **lst_node);
 
 char	*get_next_line(int fd)
@@ -30,14 +30,14 @@ char	*get_next_line(int fd)
 		check = ft_check_end_line(rest_node, 0, rest_node);
 		if (check > 0 && ft_lstsize(rest_node) != check)
 		{
-			result = ft_split_line(return_str(rest_node), &rest_node, check);
+			result = catch_line(join_content(rest_node), &rest_node, check);
 		}
 		else if (rest_node->content[0] != 0)
 		{
-			first_node = ft_lstnew(return_str(rest_node));
+			first_node = ft_lstnew(join_content(rest_node));
 			ft_lstclear(&rest_node);
 			first_node->next = ft_lstnew(look_for_line(&rest_node, fd));
-			result = return_str(first_node);
+			result = join_content(first_node);
 			ft_lstclear(&first_node);
 		}
 	}
@@ -69,8 +69,8 @@ static char	*look_for_line(t_list **rest_node, int fd)
 		check = ft_check_end_line(lst_node, b_read, first_node);
 	}
 	if (check > 0 && ft_lstsize(lst_node) != check && b_read > 0)
-		lst_node->content = ft_split_line(lst_node->content, rest_node, check);
-	buffer = return_str(first_node);
+		lst_node->content = catch_line(lst_node->content, rest_node, check);
+	buffer = join_content(first_node);
 	ft_lstclear(&first_node);
 	return (buffer);
 }
@@ -95,7 +95,7 @@ static int	make_first_node(t_list **first_node, int fd, t_list **lst_node)
 	return (b_read);
 }
 
-static char	*return_str(t_list *lst)
+static char	*join_content(t_list *lst)
 {
 	char	*str;
 	int		iterator;
@@ -122,7 +122,7 @@ static char	*return_str(t_list *lst)
 	return (str);
 }
 
-static char	*ft_split_line(char *content, t_list **rest_node, size_t len)
+static char	*catch_line(char *content, t_list **rest_node, size_t len)
 {
 	char	*rest_of_content;
 	char	*clear_content;
@@ -131,13 +131,13 @@ static char	*ft_split_line(char *content, t_list **rest_node, size_t len)
 
 	rest_of_content = &content[len];
 	iterator = 0;
-	while (rest_of_content[iterator])
-		iterator++;
 	clear_content = (char *)ft_calloc(len + 1, sizeof(char));
 	if (!clear_content)
 		return (NULL);
 	while (len--)
 		clear_content[len] = content[len];
+	while (rest_of_content[iterator])
+		iterator++;
 	rest_result = (char *)ft_calloc(iterator + 1, sizeof(char));
 	if (!rest_result)
 		return (NULL);
