@@ -6,18 +6,16 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/03 10:42:50 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/19 21:56:58 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/20 16:58:21 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static int	ft_check_end_line(t_list *lst, int b_read, t_list *first_node);
 static char	*ft_split_line(char *content, t_list **rest_node, size_t len);
 static char	*look_for_line(t_list **rest_node, int fd);
-char		*return_str(t_list *lst);
-static int make_first_node(t_list **first_node, int fd);
-
+static char	*return_str(t_list *lst);
+static int	make_first_node(t_list **first_node, int fd, t_list **lst_node);
 
 char	*get_next_line(int fd)
 {
@@ -54,20 +52,11 @@ static char	*look_for_line(t_list **rest_node, int fd)
 	t_list	*first_node;
 	int		b_read;
 	int		check;
-	t_list	*lst_line;
+	t_list	*lst_node;
 
-	// buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-	// if (!buffer)
-	// 	return (NULL);
-	// b_read = read(fd, buffer, BUFFER_SIZE);
-	// if (b_read == 0 || b_read == -1)
-	// {
-	// 	free(buffer);
-	// 	return (NULL);
-	// }
-	// lst_line = ft_lstnew(buffer);
-	// first_node = lst_line;
-  b_read = make_first_node(&first_node, fd);
+	b_read = make_first_node(&first_node, fd, &lst_node);
+	if (!b_read)
+		return (NULL);
 	check = ft_check_end_line(first_node, b_read, first_node);
 	while (check == 0)
 	{
@@ -75,25 +64,24 @@ static char	*look_for_line(t_list **rest_node, int fd)
 		if (!buffer)
 			return (NULL);
 		b_read = read(fd, buffer, BUFFER_SIZE);
-		lst_line->next = ft_lstnew(buffer);
-		lst_line = lst_line->next;
-		check = ft_check_end_line(lst_line, b_read, first_node);
+		lst_node->next = ft_lstnew(buffer);
+		lst_node = lst_node->next;
+		check = ft_check_end_line(lst_node, b_read, first_node);
 	}
-	if (check > 0 && ft_lstsize(lst_line) != check && b_read > 0)
-		lst_line->content = ft_split_line(lst_line->content, rest_node, check);
+	if (check > 0 && ft_lstsize(lst_node) != check && b_read > 0)
+		lst_node->content = ft_split_line(lst_node->content, rest_node, check);
 	buffer = return_str(first_node);
 	ft_lstclear(&first_node);
 	return (buffer);
 }
 
-static int make_first_node(t_list **first_node, int fd)
+static int	make_first_node(t_list **first_node, int fd, t_list **lst_node)
 {
-  char *buffer;
-  int b_read;
-  t_list *lst_line;
+	char	*buffer;
+	int		b_read;
 
-  b_read = 0;
-  buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
+	b_read = 1;
+	buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
 	if (!buffer)
 		return (0);
 	b_read = read(fd, buffer, BUFFER_SIZE);
@@ -102,29 +90,12 @@ static int make_first_node(t_list **first_node, int fd)
 		free(buffer);
 		return (0);
 	}
-	lst_line = ft_lstnew(buffer);
-	first_node = &lst_line;
-  return (b_read);
+	*lst_node = ft_lstnew(buffer);
+	*first_node = *lst_node;
+	return (b_read);
 }
 
-// static char	*ft_read_line(char *buffer, int fd)
-// {
-// 	int	b_read;
-//
-// 	b_read = 1;
-// 	buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-// 	if (!buffer)
-// 		return (NULL);
-// 	b_read = read(fd, buffer, BUFFER_SIZE);
-// 	if (b_read == -1)
-// 	{
-// 		free(buffer);
-// 		return (NULL);
-// 	}
-// 	return (buffer);
-// }
-
-char	*return_str(t_list *lst)
+static char	*return_str(t_list *lst)
 {
 	char	*str;
 	int		iterator;
@@ -179,28 +150,12 @@ static char	*ft_split_line(char *content, t_list **rest_node, size_t len)
 	return (clear_content);
 }
 
-static int	ft_check_end_line(t_list *lst, int b_read, t_list *first_node)
-{
-	int	iterator;
-
-	iterator = 0;
-	while (lst->content[iterator])
-	{
-		if (lst->content[iterator] == '\n')
-			return (iterator + 1);
-		iterator++;
-	}
-	if (!b_read)
-		return (ft_lstsize(first_node));
-	return (0);
-}
-
 // int	main(void)
 // {
 // 	int		fd;
 // 	char	*text;
 //
-// 	fd = open("nl", O_RDONLY);
+// 	fd = open("41_with_nl", O_RDONLY);
 // 	if (fd == -1)
 // 	{
 // 		printf("failed to open the file");

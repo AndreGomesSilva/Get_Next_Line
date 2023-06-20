@@ -6,7 +6,7 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 10:47:58 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/19 21:38:53 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/20 16:58:18 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,4 +81,20 @@ void	ft_lstclear(t_list **lst)
 		temp_node = next;
 	}
 	*lst = NULL;
+}
+
+int	ft_check_end_line(t_list *lst, int b_read, t_list *rest_node)
+{
+	int	iterator;
+
+	iterator = 0;
+	while (lst->content[iterator])
+	{
+		if (lst->content[iterator] == '\n')
+			return (iterator + 1);
+		iterator++;
+	}
+	if (!b_read)
+		return (ft_lstsize(rest_node));
+	return (0);
 }
