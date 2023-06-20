@@ -21,6 +21,6 @@ void				*ft_calloc(size_t nmemb, size_t size);
 t_list				*ft_lstlast(t_list *lst);
 int					ft_lstsize(t_list *lst);
 void				ft_lstclear(t_list **lst);
-int					ft_strlen(char *content);
+char				*return_str(t_list *lst);
 
 #endif

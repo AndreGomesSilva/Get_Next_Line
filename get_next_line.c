@@ -6,16 +6,18 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/03 10:42:50 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/19 16:18:55 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/19 21:56:58 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-int		ft_check_end_line(t_list *lst, int b_read, t_list *first_node);
-char	*ft_split_line(char *content, t_list **rest_node, size_t len);
-char	*look_for_line(t_list **rest_node, int fd);
-char	*return_str(t_list *lst);
+static int	ft_check_end_line(t_list *lst, int b_read, t_list *first_node);
+static char	*ft_split_line(char *content, t_list **rest_node, size_t len);
+static char	*look_for_line(t_list **rest_node, int fd);
+char		*return_str(t_list *lst);
+static int make_first_node(t_list **first_node, int fd);
+
 
 char	*get_next_line(int fd)
 {
@@ -46,7 +48,7 @@ char	*get_next_line(int fd)
 	return (result);
 }
 
-char	*look_for_line(t_list **rest_node, int fd)
+static char	*look_for_line(t_list **rest_node, int fd)
 {
 	char	*buffer;
 	t_list	*first_node;
@@ -54,20 +56,18 @@ char	*look_for_line(t_list **rest_node, int fd)
 	int		check;
 	t_list	*lst_line;
 
-	b_read = 1;
-	buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-	if (!buffer)
-	{
-		return (NULL);
-	}
-	b_read = read(fd, buffer, BUFFER_SIZE);
-	if (b_read == 0 || b_read == -1)
-	{
-		free(buffer);
-		return (NULL);
-	}
-	lst_line = ft_lstnew(buffer);
-	first_node = lst_line;
+	// buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
+	// if (!buffer)
+	// 	return (NULL);
+	// b_read = read(fd, buffer, BUFFER_SIZE);
+	// if (b_read == 0 || b_read == -1)
+	// {
+	// 	free(buffer);
+	// 	return (NULL);
+	// }
+	// lst_line = ft_lstnew(buffer);
+	// first_node = lst_line;
+  b_read = make_first_node(&first_node, fd);
 	check = ft_check_end_line(first_node, b_read, first_node);
 	while (check == 0)
 	{
@@ -75,11 +75,6 @@ char	*look_for_line(t_list **rest_node, int fd)
 		if (!buffer)
 			return (NULL);
 		b_read = read(fd, buffer, BUFFER_SIZE);
-		if (b_read == -1)
-		{
-			free(buffer);
-			return (NULL);
-		}
 		lst_line->next = ft_lstnew(buffer);
 		lst_line = lst_line->next;
 		check = ft_check_end_line(lst_line, b_read, first_node);
@@ -90,6 +85,44 @@ char	*look_for_line(t_list **rest_node, int fd)
 	ft_lstclear(&first_node);
 	return (buffer);
 }
+
+static int make_first_node(t_list **first_node, int fd)
+{
+  char *buffer;
+  int b_read;
+  t_list *lst_line;
+
+  b_read = 0;
+  buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
+	if (!buffer)
+		return (0);
+	b_read = read(fd, buffer, BUFFER_SIZE);
+	if (b_read == 0 || b_read == -1)
+	{
+		free(buffer);
+		return (0);
+	}
+	lst_line = ft_lstnew(buffer);
+	first_node = &lst_line;
+  return (b_read);
+}
+
+// static char	*ft_read_line(char *buffer, int fd)
+// {
+// 	int	b_read;
+//
+// 	b_read = 1;
+// 	buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
+// 	if (!buffer)
+// 		return (NULL);
+// 	b_read = read(fd, buffer, BUFFER_SIZE);
+// 	if (b_read == -1)
+// 	{
+// 		free(buffer);
+// 		return (NULL);
+// 	}
+// 	return (buffer);
+// }
 
 char	*return_str(t_list *lst)
 {
@@ -118,22 +151,22 @@ char	*return_str(t_list *lst)
 	return (str);
 }
 
-char	*ft_split_line(char *content, t_list **rest_node, size_t len)
+static char	*ft_split_line(char *content, t_list **rest_node, size_t len)
 {
 	char	*rest_of_content;
 	char	*clear_content;
-	char	*start_content;
 	int		iterator;
 	char	*rest_result;
 
-	start_content = content;
 	rest_of_content = &content[len];
-	iterator = ft_strlen(rest_of_content);
+	iterator = 0;
+	while (rest_of_content[iterator])
+		iterator++;
 	clear_content = (char *)ft_calloc(len + 1, sizeof(char));
 	if (!clear_content)
 		return (NULL);
 	while (len--)
-		clear_content[len] = start_content[len];
+		clear_content[len] = content[len];
 	rest_result = (char *)ft_calloc(iterator + 1, sizeof(char));
 	if (!rest_result)
 		return (NULL);
@@ -142,11 +175,11 @@ char	*ft_split_line(char *content, t_list **rest_node, size_t len)
 	if (*rest_node)
 		ft_lstclear(rest_node);
 	*rest_node = ft_lstnew(rest_result);
-	free(start_content);
+	free(content);
 	return (clear_content);
 }
 
-int	ft_check_end_line(t_list *lst, int b_read, t_list *first_node)
+static int	ft_check_end_line(t_list *lst, int b_read, t_list *first_node)
 {
 	int	iterator;
 
