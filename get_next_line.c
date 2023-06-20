@@ -6,7 +6,7 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/03 10:42:50 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/20 17:20:19 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/20 18:47:22 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,14 +24,14 @@ char	*get_next_line(int fd)
 	int				check;
 	t_list			*first_node;
 
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (NULL);
 	result = NULL;
 	if (rest_node)
 	{
 		check = ft_check_end_line(rest_node, 0, rest_node);
 		if (check > 0 && ft_lstsize(rest_node) != check)
-		{
 			result = catch_line(join_content(rest_node), &rest_node, check);
-		}
 		else if (rest_node->content[0] != 0)
 		{
 			first_node = ft_lstnew(join_content(rest_node));
