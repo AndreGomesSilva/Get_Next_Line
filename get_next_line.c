@@ -6,16 +6,16 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/03 10:42:50 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/20 18:47:22 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/22 18:34:21 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static char	*catch_line(char *content, t_list **rest_node, size_t len);
+static char	*get_line(char *content, t_list **rest_node, size_t len);
 static char	*look_for_line(t_list **rest_node, int fd);
-static char	*join_content(t_list *lst);
-static int	make_first_node(t_list **first_node, int fd, t_list **lst_node);
+static char	*join_content(t_list **lst);
+static int	make_node(int fd, t_list **lst_node);
 
 char	*get_next_line(int fd)
 {
@@ -29,16 +29,14 @@ char	*get_next_line(int fd)
 	result = NULL;
 	if (rest_node)
 	{
-		check = ft_check_end_line(rest_node, 0, rest_node);
-		if (check > 0 && ft_lstsize(rest_node) != check)
-			result = catch_line(join_content(rest_node), &rest_node, check);
-		else if (rest_node->content[0] != 0)
+		check = ft_check_end_line(rest_node, 1, rest_node);
+		if (check && ft_lstsize(rest_node) != check)
+			result = get_line(join_content(&rest_node), &rest_node, check);
+		else if (rest_node->content)
 		{
-			first_node = ft_lstnew(join_content(rest_node));
-			ft_lstclear(&rest_node);
+			first_node = ft_lstnew(join_content(&rest_node));
 			first_node->next = ft_lstnew(look_for_line(&rest_node, fd));
-			result = join_content(first_node);
-			ft_lstclear(&first_node);
+			result = join_content(&first_node);
 		}
 	}
 	else
@@ -48,34 +46,30 @@ char	*get_next_line(int fd)
 
 static char	*look_for_line(t_list **rest_node, int fd)
 {
-	char	*buffer;
 	t_list	*first_node;
 	int		b_read;
 	int		check;
 	t_list	*lst_node;
 
-	b_read = make_first_node(&first_node, fd, &lst_node);
-	if (!b_read)
+	b_read = make_node(fd, &lst_node);
+	if (b_read <= 0)
 		return (NULL);
+	first_node = lst_node;
 	check = ft_check_end_line(first_node, b_read, first_node);
 	while (check == 0)
 	{
-		buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-		if (!buffer)
-			return (NULL);
-		b_read = read(fd, buffer, BUFFER_SIZE);
-		lst_node->next = ft_lstnew(buffer);
+		b_read = make_node(fd, &lst_node->next);
 		lst_node = lst_node->next;
 		check = ft_check_end_line(lst_node, b_read, first_node);
 	}
-	if (check > 0 && ft_lstsize(lst_node) != check && b_read > 0)
-		lst_node->content = catch_line(lst_node->content, rest_node, check);
-	buffer = join_content(first_node);
-	ft_lstclear(&first_node);
-	return (buffer);
+	if (check && ft_lstsize(lst_node) != check && b_read > 0)
+		lst_node->content = get_line(lst_node->content, rest_node, check);
+	else if (b_read < 0)
+		return (NULL);
+	return (join_content(&first_node));
 }
 
-static int	make_first_node(t_list **first_node, int fd, t_list **lst_node)
+static int	make_node(int fd, t_list **lst_node)
 {
 	char	*buffer;
 	int		b_read;
@@ -85,44 +79,42 @@ static int	make_first_node(t_list **first_node, int fd, t_list **lst_node)
 	if (!buffer)
 		return (0);
 	b_read = read(fd, buffer, BUFFER_SIZE);
-	if (b_read == 0 || b_read == -1)
-	{
+	if (b_read <= 0)
 		free(buffer);
-		return (0);
-	}
-	*lst_node = ft_lstnew(buffer);
-	*first_node = *lst_node;
+	else if (b_read > 0)
+		*lst_node = ft_lstnew(buffer);
 	return (b_read);
 }
 
-static char	*join_content(t_list *lst)
+static char	*join_content(t_list **lst)
 {
 	char	*str;
 	int		iterator;
 	int		size;
 	int		second_iterator;
+	t_list	*start_node;
 
 	iterator = 0;
-	size = ft_lstsize(lst);
+	start_node = *lst;
+	size = ft_lstsize(*lst);
 	str = (char *)ft_calloc(size + 1, sizeof(char));
 	if (!str)
 		return (NULL);
-	while (lst)
+	while (start_node)
 	{
 		second_iterator = 0;
-		while (size && lst->content[second_iterator])
+		while (size && start_node->content[second_iterator])
 		{
-			str[iterator] = lst->content[second_iterator];
-			iterator++;
-			second_iterator++;
+			str[iterator++] = start_node->content[second_iterator++];
 			size--;
 		}
-		lst = lst->next;
+		start_node = start_node->next;
 	}
+	ft_lstclear(lst);
 	return (str);
 }
 
-static char	*catch_line(char *content, t_list **rest_node, size_t len)
+static char	*get_line(char *content, t_list **rest_node, size_t len)
 {
 	char	*rest_of_content;
 	char	*clear_content;
@@ -143,8 +135,6 @@ static char	*catch_line(char *content, t_list **rest_node, size_t len)
 		return (NULL);
 	while (iterator--)
 		rest_result[iterator] = rest_of_content[iterator];
-	if (*rest_node)
-		ft_lstclear(rest_node);
 	*rest_node = ft_lstnew(rest_result);
 	free(content);
 	return (clear_content);
@@ -155,7 +145,7 @@ static char	*catch_line(char *content, t_list **rest_node, size_t len)
 // 	int		fd;
 // 	char	*text;
 //
-// 	fd = open("41_with_nl", O_RDONLY);
+// 	fd = open("multiple_nlx5", O_RDONLY);
 // 	if (fd == -1)
 // 	{
 // 		printf("failed to open the file");
@@ -175,15 +165,18 @@ static char	*catch_line(char *content, t_list **rest_node, size_t len)
 // 	text = get_next_line(fd);
 // 	printf("%s", text);
 // 	free(text);
+// 	text = get_next_line(fd);
+// 	printf("%s", text);
+// 	free(text);
+// 	text = get_next_line(fd);
+// 	printf("%s", text);
+// 	free(text);
 // 	// text = get_next_line(fd);
 // 	// printf("%s", text);
 // 	// free(text);
 // 	// text = get_next_line(fd);
 // 	// printf("%s", text);
 // 	// free(text);
-// 	// text = get_next_line(fd);
-// 	// printf("%s", text);
-// 	// free(text);
-// 	close(fd);
+// 	// close(fd);
 // 	return (0);
 // }

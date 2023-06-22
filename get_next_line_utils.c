@@ -6,7 +6,7 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 10:47:58 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/20 17:48:25 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/22 18:14:24 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,13 +88,22 @@ int	ft_check_end_line(t_list *lst, int b_read, t_list *rest_node)
 	int	iterator;
 
 	iterator = 0;
-	while (lst->content[iterator])
-	{
-		if (lst->content[iterator] == '\n')
-			return (iterator + 1);
-		iterator++;
-	}
-	if (!b_read)
+	if (b_read == 0)
 		return (ft_lstsize(rest_node));
+	else if (b_read == -1)
+	{
+		if (rest_node->content)
+			ft_lstclear(&rest_node);
+		return (-1);
+	}
+	else
+	{
+		while (lst->content[iterator])
+		{
+			if (lst->content[iterator] == '\n')
+				return (iterator + 1);
+			iterator++;
+		}
+	}
 	return (0);
 }
