@@ -6,7 +6,7 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 10:47:58 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/22 18:14:24 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/22 19:39:07 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ void	*ft_calloc(size_t nmemb, size_t size)
 		ptr[i] = '\0';
 		i++;
 	}
-	return (ptr);
+	return ((void *)ptr);
 }
 
 int	ft_lstsize(t_list *lst)
@@ -83,14 +83,14 @@ void	ft_lstclear(t_list **lst)
 	*lst = NULL;
 }
 
-int	ft_check_end_line(t_list *lst, int b_read, t_list *rest_node)
+int	ft_check_end_line(t_list *lst, int bytes_read, t_list *rest_node)
 {
 	int	iterator;
 
 	iterator = 0;
-	if (b_read == 0)
+	if (bytes_read == 0)
 		return (ft_lstsize(rest_node));
-	else if (b_read == -1)
+	else if (bytes_read == -1)
 	{
 		if (rest_node->content)
 			ft_lstclear(&rest_node);

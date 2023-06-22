@@ -6,7 +6,7 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/20 16:48:15 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/22 18:14:20 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/22 19:40:17 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,6 @@
 # ifndef BUFFER_SIZE
 #  define BUFFER_SIZE 42
 # endif
-# include <fcntl.h>
-# include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
 
@@ -32,7 +30,7 @@ t_list				*ft_lstnew(void *content);
 void				*ft_calloc(size_t nmemb, size_t size);
 int					ft_lstsize(t_list *lst);
 void				ft_lstclear(t_list **lst);
-int					ft_check_end_line(t_list *lst, int b_read,
+int					ft_check_end_line(t_list *lst, int bytes_read,
 						t_list *rest_node);
 
 #endif

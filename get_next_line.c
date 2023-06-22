@@ -6,7 +6,7 @@
 /*   By: angomes- <angomes-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/03 10:42:50 by angomes-          #+#    #+#             */
-/*   Updated: 2023/06/22 18:34:21 by angomes-         ###   ########.fr       */
+/*   Updated: 2023/06/22 19:46:38 by angomes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,22 +21,22 @@ char	*get_next_line(int fd)
 {
 	char			*result;
 	static t_list	*rest_node;
-	int				check;
-	t_list			*first_node;
+	int				check_line;
+	t_list			*head;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	result = NULL;
 	if (rest_node)
 	{
-		check = ft_check_end_line(rest_node, 1, rest_node);
-		if (check && ft_lstsize(rest_node) != check)
-			result = get_line(join_content(&rest_node), &rest_node, check);
+		check_line = ft_check_end_line(rest_node, 1, rest_node);
+		if (check_line && ft_lstsize(rest_node) != check_line)
+			result = get_line(join_content(&rest_node), &rest_node, check_line);
 		else if (rest_node->content)
 		{
-			first_node = ft_lstnew(join_content(&rest_node));
-			first_node->next = ft_lstnew(look_for_line(&rest_node, fd));
-			result = join_content(&first_node);
+			head = ft_lstnew(join_content(&rest_node));
+			head->next = ft_lstnew(look_for_line(&rest_node, fd));
+			result = join_content(&head);
 		}
 	}
 	else
@@ -46,44 +46,44 @@ char	*get_next_line(int fd)
 
 static char	*look_for_line(t_list **rest_node, int fd)
 {
-	t_list	*first_node;
-	int		b_read;
-	int		check;
-	t_list	*lst_node;
+	t_list	*head;
+	int		bytes_read;
+	int		check_line;
+	t_list	*new_node;
 
-	b_read = make_node(fd, &lst_node);
-	if (b_read <= 0)
+	bytes_read = make_node(fd, &new_node);
+	if (bytes_read <= 0)
 		return (NULL);
-	first_node = lst_node;
-	check = ft_check_end_line(first_node, b_read, first_node);
-	while (check == 0)
+	head = new_node;
+	check_line = ft_check_end_line(head, bytes_read, head);
+	while (check_line == 0)
 	{
-		b_read = make_node(fd, &lst_node->next);
-		lst_node = lst_node->next;
-		check = ft_check_end_line(lst_node, b_read, first_node);
+		bytes_read = make_node(fd, &new_node->next);
+		new_node = new_node->next;
+		check_line = ft_check_end_line(new_node, bytes_read, head);
 	}
-	if (check && ft_lstsize(lst_node) != check && b_read > 0)
-		lst_node->content = get_line(lst_node->content, rest_node, check);
-	else if (b_read < 0)
+	if (check_line && ft_lstsize(new_node) != check_line && bytes_read > 0)
+		new_node->content = get_line(new_node->content, rest_node, check_line);
+	else if (bytes_read < 0)
 		return (NULL);
-	return (join_content(&first_node));
+	return (join_content(&head));
 }
 
 static int	make_node(int fd, t_list **lst_node)
 {
 	char	*buffer;
-	int		b_read;
+	int		bytes_read;
 
-	b_read = 1;
+	bytes_read = 1;
 	buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
 	if (!buffer)
 		return (0);
-	b_read = read(fd, buffer, BUFFER_SIZE);
-	if (b_read <= 0)
+	bytes_read = read(fd, buffer, BUFFER_SIZE);
+	if (bytes_read <= 0)
 		free(buffer);
-	else if (b_read > 0)
+	else if (bytes_read > 0)
 		*lst_node = ft_lstnew(buffer);
-	return (b_read);
+	return (bytes_read);
 }
 
 static char	*join_content(t_list **lst)
@@ -139,44 +139,3 @@ static char	*get_line(char *content, t_list **rest_node, size_t len)
 	free(content);
 	return (clear_content);
 }
-
-// int	main(void)
-// {
-// 	int		fd;
-// 	char	*text;
-//
-// 	fd = open("multiple_nlx5", O_RDONLY);
-// 	if (fd == -1)
-// 	{
-// 		printf("failed to open the file");
-// 		return (1);
-// 	}
-// 	text = get_next_line(fd);
-// 	// while (text)
-// 	// {
-// 	// 	free(text);
-// 	// 	text = get_next_line(fd);
-// 	// }
-// 	printf("%s", text);
-// 	free(text);
-// 	text = get_next_line(fd);
-// 	printf("%s", text);
-// 	free(text);
-// 	text = get_next_line(fd);
-// 	printf("%s", text);
-// 	free(text);
-// 	text = get_next_line(fd);
-// 	printf("%s", text);
-// 	free(text);
-// 	text = get_next_line(fd);
-// 	printf("%s", text);
-// 	free(text);
-// 	// text = get_next_line(fd);
-// 	// printf("%s", text);
-// 	// free(text);
-// 	// text = get_next_line(fd);
-// 	// printf("%s", text);
-// 	// free(text);
-// 	// close(fd);
-// 	return (0);
-// }
