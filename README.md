@@ -1,8 +1,12 @@
-# README
-
 ---
 
+<div align="center">
+  
 ![get_next_linen.png](./img/get_next_linen.png)
+
+</div>
+
+---
 
 ## Get Next Line
 
